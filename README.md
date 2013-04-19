@@ -64,9 +64,10 @@ those that do not.
 
 To join a Spino cluster, provide the address of other known nodes
 (one is enough, but it must be up for the join to succeed)
-
-    Spino spino = new Spino();
-    spino.start("192.168.0.2", "192.168.0.3");
+```java
+Spino spino = new Spino();
+spino.start("192.168.0.2", "192.168.0.3");
+```
 
 (If you are in a multicast environment, you don't need to specify any other node). Just use start()
 
@@ -74,21 +75,25 @@ To join a Spino cluster, provide the address of other known nodes
 
 When a node knows that a service is ready, it can activate it using
 
-    spino.activateServiceEndpoint("database-v1", "http://db-0:8001");
+```java
+spino.activateServiceEndpoint("database-v1", "http://db-0:8001");
+```
 
 ### Listing active services
 
-Any node can list all the actives services in the cluster
+Any node can list all the active services in the cluster:
 
-    for (Spino.Service endpoint : spino.getServiceEndpoints("database-v1")) {
-        System.out.println("db available at: " + endpoint.getAddress());
-    }
-
+```
+for (spino.Service endpoint : spino.getServiceEndpoints("database-v1")) {
+    System.out.println("db available at: " + endpoint.getAddress());
+}
+```
 ### Deactivating an endpoint
 
 A node can withdraw any endpoint at any time.
-
-    spino.deactivateLocalService("database-v1", "http://db-0:8001");
+```java
+spino.deactivateServiceEndpoint("database-v1", "http://db-0:8001");
+```
 
 ### Shutting down Spino
 
@@ -98,29 +103,29 @@ or if it's under maintenance.
 
 When a node is shut down, all its services are deactivated.
 
-    // remove this node from the cluster
-    spino.shutdown()
-
+```java
+spino.shutdown()
+```
 
 ### Maven
+```xml
+<repositories>
+    <repository>
+        <id>mcaprari-releases</id>
+        <url>https://github.com/mcaprari/mcaprari-maven-repo/raw/master/releases</url>
+    </repository>
+    <repository>
+        <id>mcaprari-snapshots</id>
+        <url>https://github.com/mcaprari/mcaprari-maven-repo/raw/master/snapshots</url>
+    </repository>
+</repositories>
 
-    <repositories>
-        <repository>
-            <id>mcaprari-releases</id>
-            <url>https://github.com/mcaprari/mcaprari-maven-repo/raw/master/releases</url>
-        </repository>
-        <repository>
-            <id>mcaprari-snapshots</id>
-            <url>https://github.com/mcaprari/mcaprari-maven-repo/raw/master/snapshots</url>
-        </repository>
-    </repositories>
-
-    <dependency>
-        <groupId>spino</groupId>
-        <artifactId>spino-core</artifactId>
-        <version>1.0</version>
-    </dependency>
-
+<dependency>
+    <groupId>spino</groupId>
+    <artifactId>spino-core</artifactId>
+    <version>1.0</version>
+</dependency>
+```
 
 
 
