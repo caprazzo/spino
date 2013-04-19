@@ -28,7 +28,8 @@ import java.util.*;
 
 /**
  *  How it works:
- *  - data:
+ *
+ *  Data:
  *      ServiceMap: an Hazelcast Multimap service -> (member, service, address)
  *      RoutingTable: a local Table (Hazelcat Member, Server, (member, service, address), Status)
  *
@@ -51,10 +52,19 @@ import java.util.*;
  *      When Hazelcast notifies that a member has been removed, all RoutingTable
  *      entries for that Member are set to Inactive.
  *
- *  - when a service is deactivated on an address,
- *    an element is removed from
+ *  Listing Active Service Locations:
+ *      to list all locations for a service, it is enough to
+ *      query the Routing Table by service.
  *
- *  TODO: before adding an entry in the routing table, always chek if the member is active
+ *      Because the Active flag in the routing table is managed when
+ *      members come and leave, it should always reflect the actual state
+ *      of the cluster.
+ *
+ *  Setting Initial State:
+ *      At startup, populate
+ *
+ *  TODO: before adding an entry in the routing table, always check if the member is active
+ *  TODO: allow users to listen for changes in service availability
  *
  */
 final class SpinoHazelcastImpl {
