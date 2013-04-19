@@ -1,7 +1,7 @@
-Spino - simple java services clustering
-=======================================
+Spino - simple clustering for java HTTP services
+================================================
 
-Spino is a simple tool to coordinate a cluster of Http services.
+Spino is a simple tool to create clusters of java HTTP services.
 
 A endpoint is defined by a name and url. In a cluster, a endpoint
 will have several urls.
