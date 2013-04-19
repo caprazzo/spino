@@ -12,13 +12,13 @@ so it can make calls directly to active servers.
 - [Spino - simple clustering for java HTTP services](#spino---simple-clustering-for-java-http-services)
 	- [Concepts](#concepts)
 		- [Service](#service)
-		- [Endpoint](#endpoint)
+		- [Endpoint](#serviceInstance)
 		- [Spino Node](#spino-node)
 	- [Usage](#usage)
 		- [Starting Spino](#starting-spino)
-		- [Activating a endpoint](#activating-a-endpoint)
+		- [Activating a serviceInstance](#activating-a-serviceInstance)
 		- [Listing active services](#listing-active-services)
-		- [Deactivating an endpoint](#deactivating-an-endpoint)
+		- [Deactivating an serviceInstance](#deactivating-an-serviceInstance)
 		- [Shutting down Spino](#shutting-down-spino)
 		- [Maven](#maven)
 
@@ -70,7 +70,7 @@ Spino.start("192.168.0.2", "192.168.0.3");
 
 (If you are in a multicast environment, you don't need to specify any other node). Just use start()
 
-### Activating a endpoint
+### Activating a serviceInstance
 
 When a node knows that a service is ready, it can activate it using
 
@@ -87,9 +87,9 @@ for (URL address : Spino.getServiceAddresses("database-v1")) {
     System.out.println("database-v1 available at: " + address);
 }
 ```
-### Deactivating an endpoint
+### Deactivating an serviceInstance
 
-A node can withdraw any endpoint at any time.
+A node can withdraw any serviceInstance at any time.
 ```java
 Spino.deactivateServiceEndpoint("database-v1", "http://db-0:8001");
 ```

@@ -26,8 +26,39 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 
-final class SpinoImpl {
-    private static final Logger LOG = LoggerFactory.getLogger(SpinoImpl.class);
+/**
+ *  How it works:
+ *  - data:
+ *      ServiceMap: an Hazelcast Multimap service -> (member, service, address)
+ *      RoutingTable: a local Table (Hazelcat Member, Server, (member, service, address), Status)
+ *
+ *  Service Activation:
+ *      When a service is activated on an address using activateServiceLocation
+ *      an element is added to ServiceMap  service -> (LocalMember, service, address)
+ *
+ *      When ServiceMap notifies entryAdded(sender, (member, service, address)),
+ *      an entry is added to the Routing Table: (member, service, (member, service, address), Active)
+ *
+ *      When Hazelcast notifies that a member has been added, all RoutingTable
+ *      entries for that Member are set to Active.
+ *
+ *  Service Deactivation:
+ *      When a service is deactivated on an address using deactivateServiceLocation,
+ *      an element is removed from the ServiceMap service -> (LocalMember, service, address)
+ *
+ *      When ServiceMap notifies entryRemoved, the entry is removed from RoutingTable
+ *
+ *      When Hazelcast notifies that a member has been removed, all RoutingTable
+ *      entries for that Member are set to Inactive.
+ *
+ *  - when a service is deactivated on an address,
+ *    an element is removed from
+ *
+ *  TODO: before adding an entry in the routing table, always chek if the member is active
+ *
+ */
+final class SpinoHazelcastImpl {
+    private static final Logger LOG = LoggerFactory.getLogger(SpinoHazelcastImpl.class);
 
     private static final String SERVICES_MAP = "spino-services";
     private static final String GROUP_NAME = "SPINO";
@@ -38,12 +69,11 @@ final class SpinoImpl {
     private HazelcastListener handler;
     private Cluster cluster;
 
-
-    public void start() {
+    void start() {
         start(null);
     }
 
-    public void start(String... seeds) {
+    void start(String... seeds) {
         handler = this.new HazelcastListener();
         Config hzConfig = new Config();
 
@@ -64,61 +94,61 @@ final class SpinoImpl {
         syncServiceMap(cluster);
     }
 
-    public void shutdown() {
+    void shutdown() {
         Cluster cluster = hz.getCluster();
         cluster.removeMembershipListener(handler);
         getServicesMap().removeEntryListener(handler);
     }
 
-    public void activateServiceEndpoint(String serviceName, URL address) {
-        LOG.info("Activating endpoint for endpoint " + serviceName + " at " + address);
-        EndpointMember service = new EndpointMember(serviceName, address, cluster.getLocalMember());
-        getServicesMap().put(service.getService(), service);
+    void activateServiceLocation(String service, URL address) {
+        LOG.info("Activating endpoint for endpoint " + service + " at " + address);
+        LocationBinding binding = new LocationBinding(service, address, cluster.getLocalMember());
+        getServicesMap().put(service, binding);
     }
 
-    public void activateServiceEndpoint(String serviceName, String address) {
+    void activateServiceLocation(String service, String address) {
         try {
-            activateServiceEndpoint(serviceName, new URL(address));
+            activateServiceLocation(service, new URL(address));
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void deactivateLocalService(String name, URL address) {
-        LOG.info("Deactivating endpoint for endpoint " + name + " at " + address);
-        EndpointMember service = new EndpointMember(name, address, cluster.getLocalMember());
-        getServicesMap().remove(service.getService(), service);
+    void deactivateServiceLocation(String service, URL address) {
+        LOG.info("Deactivating endpoint for endpoint " + service + " at " + address);
+        LocationBinding binding = new LocationBinding(service, address, cluster.getLocalMember());
+        getServicesMap().remove(service, binding);
     }
 
-    public void deactivateLocalService(String name, String address) {
+    void deactivateServiceLocation(String service, String address) {
         try {
-            deactivateLocalService(name, new URL(address));
+            deactivateServiceLocation(service, new URL(address));
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public List<URL> getServiceAddresses(String serviceName) {
+    List<URL> getServiceAddresses(String service) {
         ArrayList<URL> endpoints = new ArrayList<URL>();
-        Map<EndpointMember, Boolean> services = routingTable.services(serviceName);
-        for(Map.Entry<EndpointMember, Boolean> entry : services.entrySet()) {
+        Map<LocationBinding, Boolean> services = routingTable.services(service);
+        for(Map.Entry<LocationBinding, Boolean> entry : services.entrySet()) {
             if(entry.getValue()) {
-                endpoints.add(entry.getKey().getEndpoint().getAddress());
+                endpoints.add(entry.getKey().getServiceInstance().getAddress());
             }
         }
         return endpoints;
     }
 
-    private MultiMap<String, EndpointMember> getServicesMap() {
+    private MultiMap<String, LocationBinding> getServicesMap() {
         return hz.getMultiMap(SERVICES_MAP);
     }
 
     private void syncServiceMap(Cluster cluster) {
-        Set<Member> members = cluster.getMembers();
-        for (Map.Entry<String, EndpointMember> entry : getServicesMap().entrySet()) {
+        Set<Member> onlineMembers = cluster.getMembers();
+        for (Map.Entry<String, LocationBinding> entry : getServicesMap().entrySet()) {
             LOG.info("Importing existing endpoint from distributed map: {}", entry);
             Member member = entry.getValue().getMember();
-            if (!members.contains(member)) {
+            if (!onlineMembers.contains(member)) {
                 LOG.info("Skipping endpoint import from distributed map, because its member is not online: {} ", entry);
                 continue;
             }
@@ -131,32 +161,32 @@ final class SpinoImpl {
      *  - members added and removed to a cluster
      *  - entries added/removed/updated to a multimap
      */
-    private class HazelcastListener implements  MembershipListener, EntryListener<String, EndpointMember> {
+    private class HazelcastListener implements  MembershipListener, EntryListener<String, LocationBinding> {
         private final Logger LOG = LoggerFactory.getLogger(HazelcastListener.class);
 
         @Override
-        public void entryAdded(EntryEvent<String, EndpointMember> event) {
+        public void entryAdded(EntryEvent<String, LocationBinding> event) {
             if (LOG.isDebugEnabled())
                 LOG.debug("entryAdded {}", event);
             routingTable.putService(event.getValue());
         }
 
         @Override
-        public void entryRemoved(EntryEvent<String, EndpointMember> event) {
+        public void entryRemoved(EntryEvent<String, LocationBinding> event) {
             if (LOG.isDebugEnabled())
                 LOG.debug("entryRemoved {}", event);
             routingTable.removeService(event.getValue());
         }
 
         @Override
-        public void entryUpdated(EntryEvent<String, EndpointMember> event) {
+        public void entryUpdated(EntryEvent<String, LocationBinding> event) {
             if (LOG.isDebugEnabled())
                 LOG.debug("entryUpdated {}", event);
             routingTable.putService(event.getValue());
         }
 
         @Override
-        public void entryEvicted(EntryEvent<String, EndpointMember> event) {
+        public void entryEvicted(EntryEvent<String, LocationBinding> event) {
             if (LOG.isDebugEnabled())
                 LOG.debug("entryEvicted {}", event);
             routingTable.removeService(event.getValue());

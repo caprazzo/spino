@@ -1,3 +1,18 @@
+/**
+ * Copyright 2013 Matteo Caprari
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package spino.core;
 
 import com.google.common.collect.HashBasedTable;
@@ -13,21 +28,21 @@ import java.util.Map;
 final class RoutingTable {
     private final Logger LOG = LoggerFactory.getLogger(RoutingTable.class);
 
-    // a table  | Member | EndpointMember Name | EndpointMember |
-    // to maintain a double index on EndpointMember
-    private HashBasedTable<Member, String, EndpointMember> serviceTable = HashBasedTable.create();
+    // a table  | Member | Service | LocationBinding |
+    // to maintain a double index on LocationBinding
+    private HashBasedTable<Member, String, LocationBinding> serviceTable = HashBasedTable.create();
 
     // maintains enabled/disabled status for services
-    private HashMap<EndpointMember, Boolean> statusIndex = new HashMap<EndpointMember, Boolean>();
+    private HashMap<LocationBinding, Boolean> statusIndex = new HashMap<LocationBinding, Boolean>();
 
-    synchronized public void putService(EndpointMember service) {
+    synchronized void putService(LocationBinding service) {
         LOG.info("put endpoint {}", service);
         serviceTable.put(service.getMember(), service.getService(), service);
         statusIndex.put(service, true);
         DumpTable();
     }
 
-    synchronized public void removeService(EndpointMember service) {
+    synchronized void removeService(LocationBinding service) {
         LOG.info("remove endpoint {}", service);
         serviceTable.remove(service.getMember(), service.getService());
         statusIndex.remove(service);
@@ -37,47 +52,47 @@ final class RoutingTable {
     /**
      * Retrieve all services offered by a member.
      * @param member
-     * @return a Map EndpointMember -> boolean enabled/disabled status for services
+     * @return a Map LocationBinding -> boolean enabled/disabled status for services
      */
-    synchronized public Map<EndpointMember, Boolean> services(Member member) {
+    synchronized Map<LocationBinding, Boolean> services(Member member) {
         return statusMap(serviceTable.row(member).values());
     }
 
     /**
-     * Retrieve all endpoint instances by name.
-     * @param name
-     * @return a Map EndpointMember -> boolean enabled/disabled status for services
+     * Retrieve all endpoints by service
+     * @param service
+     * @return a Map LocationBinding -> boolean enabled/disabled status for services
      */
-    synchronized public Map<EndpointMember, Boolean> services(String name) {
-        return statusMap(serviceTable.column(name).values());
+    synchronized Map<LocationBinding, Boolean> services(String service) {
+        return statusMap(serviceTable.column(service).values());
     }
 
-    synchronized public void removeMember(Member member) {
+    synchronized void removeMember(Member member) {
         LOG.info("Disabling all entries for removed [{}]", member);
-        for (EndpointMember service: serviceTable.row(member).values()) {
+        for (LocationBinding service: serviceTable.row(member).values()) {
             statusIndex.put(service, false);
         }
         DumpTable();
     }
 
-    synchronized public void addMember(Member member) {
+    synchronized void addMember(Member member) {
         LOG.info("Enabling all entries for added [{}]", member);
-        for (EndpointMember service: serviceTable.row(member).values()) {
+        for (LocationBinding service: serviceTable.row(member).values()) {
             statusIndex.put(service, true);
         }
         DumpTable();
     }
 
-    synchronized private HashMap<EndpointMember, Boolean> statusMap(Collection<EndpointMember> services) {
-        HashMap<EndpointMember, Boolean> statusMap = new HashMap<EndpointMember, Boolean>();
-        for (EndpointMember service : services) {
+    synchronized private HashMap<LocationBinding, Boolean> statusMap(Collection<LocationBinding> services) {
+        HashMap<LocationBinding, Boolean> statusMap = new HashMap<LocationBinding, Boolean>();
+        for (LocationBinding service : services) {
             statusMap.put(service, statusIndex.get(service));
         }
         return statusMap;
     }
 
     synchronized private void DumpTable() {
-        for(Table.Cell<Member, String, EndpointMember> cell : serviceTable.cellSet()) {
+        for(Table.Cell<Member, String, LocationBinding> cell : serviceTable.cellSet()) {
             LOG.info("{} | {} | {} | {}", cell.getRowKey(), cell.getColumnKey(), cell.getValue(), statusIndex.get(cell.getValue()));
         }
     }
