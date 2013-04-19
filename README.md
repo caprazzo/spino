@@ -26,22 +26,22 @@ code to use it in your services.
 
 ### Maven
 
-<repositories>
-    <repository>
-        <id>mcaprari-releases</id>
-        <url>https://github.com/mcaprari/mcaprari-maven-repo/raw/master/releases</url>
-    </repository>
-    <repository>
-        <id>mcaprari-snapshots</id>
-        <url>https://github.com/mcaprari/mcaprari-maven-repo/raw/master/snapshots</url>
-    </repository>
-</repositories>
+    <repositories>
+        <repository>
+            <id>mcaprari-releases</id>
+            <url>https://github.com/mcaprari/mcaprari-maven-repo/raw/master/releases</url>
+        </repository>
+        <repository>
+            <id>mcaprari-snapshots</id>
+            <url>https://github.com/mcaprari/mcaprari-maven-repo/raw/master/snapshots</url>
+        </repository>
+    </repositories>
 
-<dependency>
-    <groupId>spino</groupId>
-    <artifactId>spino-core</artifactId>
-    <version>1.0</version>
-</dependency>
+    <dependency>
+        <groupId>spino</groupId>
+        <artifactId>spino-core</artifactId>
+        <version>1.0</version>
+    </dependency>
 
 ### Example System
 
