@@ -1,18 +1,31 @@
 Spino - simple clustering for java HTTP services
 ================================================
 
-Spino is a simple tool to create clusters of java HTTP services.
+Spino is a simple clustering library for java HTTP services.
 
-A endpoint is defined by a name and url. In a cluster, a endpoint
-will have several urls.
+Use Spino to implement redundant HTTP services without
+using HTTP proxies. A Spino Node always knows all the available instances of a service,
+so it can direct HTTP calls directly to active servers.
 
-Any java program can become a Node in Spino cluster. Any node can
-activate and deactivate endpoint instances, and query the cluster
-about availability and location of services.
+## Concepts
 
-Spino uses Hazelcast to maintain an shared, up-to date view of
-services, their URLs and availability. If a Node goes down or becomes
-unreachable, it's active services are marked as down.
+A Service is defined by a name. For example, "auth-api-v1".
+
+An Endpoint is defined by a Service name and an address. For example, Endpoint("auth-api-v1", "http://auth-host-0:8080")
+
+A service may have multiple endpoints. For example "http://auth-host-0:8080" and "http://auth-host-1:8080"
+
+A Spino node is any java program that joins a Spino Cluster.
+
+A Spino Node can notify the cluster that an Endpoint has
+become available or unavailable, and list service endpoints.
+
+When a Spino Node activates an Endpoint, the Endpoint is considered
+'attached' that Node: if the Node goes down or becomes unreachable,
+the Endpoint is considered down too.
+
+Obviously this works best if a Node is also an Endpoint itself
+(for example, a program that starts a jetty server is an ideal Spino Node).
 
 Spino only checks if nodes are up or down and DOES NOT check
 if services are in fact working. Each node is responsible
@@ -96,7 +109,7 @@ Any node can list all the actives services in the cluster
         System.out.println("db available at: " + endpoint.getAddress());
     }
 
-### Deactivating a endpoint
+### Deactivating an endpoint
 
 A node can withdraw any endpoint at any time.
 
