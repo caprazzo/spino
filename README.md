@@ -47,8 +47,8 @@ code to use it in your services.
 
 Here is a simple, somewhat realistic imaginary system:
  - The Database Service (DB): a java web endpoint that offers up some data.
- - The Auth Service (AUTH): another java web endpoint that offers authentication services.  AUTH uses DB
- - The Webapp (WEB): a java web application that does lots of things WEB uses both AUTH and DB
+ - The Auth Service (AUTH): another java web endpoint that offers authentication services and uses DB.
+ - The Webapp (WEB): a java web application that does webby stuff and uses both AUTH and DB
 
 And here is our imaginary system deployed in production:
 
