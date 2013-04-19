@@ -67,13 +67,17 @@ import java.util.*;
  *  TODO: allow users to listen for changes in service availability
  *
  */
-final class SpinoHazelcastImpl {
+final class SpinoHazelcastImpl implements RoutingTable.RoutingTableListener {
     private static final Logger LOG = LoggerFactory.getLogger(SpinoHazelcastImpl.class);
 
     private static final String SERVICES_MAP = "spino-services";
     private static final String GROUP_NAME = "SPINO";
 
-    private final RoutingTable routingTable = new RoutingTable();
+    private final RoutingTable routingTable;
+
+    SpinoHazelcastImpl() {
+        routingTable = new RoutingTable(this);
+    }
 
     private HazelcastInstance hz;
     private HazelcastListener handler;
@@ -138,15 +142,8 @@ final class SpinoHazelcastImpl {
         }
     }
 
-    List<URL> getServiceAddresses(String service) {
-        ArrayList<URL> endpoints = new ArrayList<URL>();
-        Map<LocationBinding, Boolean> services = routingTable.services(service);
-        for(Map.Entry<LocationBinding, Boolean> entry : services.entrySet()) {
-            if(entry.getValue()) {
-                endpoints.add(entry.getKey().getServiceInstance().getAddress());
-            }
-        }
-        return endpoints;
+    Collection<URL> getServiceAddresses(String service) {
+        return routingTable.getServiceAddresses(service);
     }
 
     private MultiMap<String, LocationBinding> getServicesMap() {
@@ -164,6 +161,11 @@ final class SpinoHazelcastImpl {
             }
             routingTable.putService(entry.getValue());
         }
+    }
+
+    @Override
+    public void onRoutingTableChange() {
+        // notify changes to any listener
     }
 
     /**
