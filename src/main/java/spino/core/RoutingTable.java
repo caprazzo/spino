@@ -25,17 +25,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 final class RoutingTable {
 
     private volatile Multimap<String, URL> serviceMap;
 
     public interface RoutingTableListener {
-        void onRoutingTableChange();
+        /**
+         * Invoked by routingTable when modified.
+         * @param services services that have been affected by this change
+         */
+        void onRoutingTableChange(Collection<String> services);
     }
 
     private final RoutingTableListener listener;
@@ -58,57 +59,61 @@ final class RoutingTable {
     /**
      * Retrieve all addresses by service
      * @param service
-     * @return a Map LocationBinding -> boolean enabled/disabled status for getServiceAddresses
+     * @return a Collection of URLs available for this service
      */
      Collection<URL> getServiceAddresses(String service) {
         return serviceMap.get(service);
      }
 
-    void putService(LocationBinding service) {
-        LOG.info("put endpoint {}", service);
+    void putService(LocationBinding binding) {
+        LOG.info("put endpoint {}", binding);
         synchronized (lock) {
-            serviceTable.put(service.getMember(), service.getService(), service);
-            statusIndex.put(service, true);
+            serviceTable.put(binding.getMember(), binding.getService(), binding);
+            statusIndex.put(binding, true);
             updateCaches();
         }
-        notifyChange();
+        notifyChange(Arrays.asList(binding.getService()));
     }
 
-    void removeService(LocationBinding service) {
-        LOG.info("remove endpoint {}", service);
+    void removeService(LocationBinding binding) {
+        LOG.info("remove endpoint {}", binding);
         synchronized (lock) {
-            serviceTable.remove(service.getMember(), service.getService());
-            statusIndex.remove(service);
+            serviceTable.remove(binding.getMember(), binding.getService());
+            statusIndex.remove(binding);
             updateCaches();
         }
-        notifyChange();
+        notifyChange(Arrays.asList(binding.getService()));
     }
 
     void removeMember(Member member) {
         LOG.info("Disabling all entries for removed [{}]", member);
+        Set<String> affected = new HashSet<String>();
         synchronized (lock) {
-            for (LocationBinding service: serviceTable.row(member).values()) {
-                statusIndex.put(service, false);
+            for (LocationBinding binding: serviceTable.row(member).values()) {
+                statusIndex.put(binding, false);
+                affected.add(binding.getService());
                 updateCaches();
             }
         }
-        notifyChange();
+        notifyChange(affected);
     }
 
     void addMember(Member member) {
         LOG.info("Enabling all entries for added [{}]", member);
+        Set<String> affected = new HashSet<String>();
         synchronized (lock) {
-            for (LocationBinding service: serviceTable.row(member).values()) {
-                statusIndex.put(service, true);
+            for (LocationBinding binding: serviceTable.row(member).values()) {
+                statusIndex.put(binding, true);
+                affected.add(binding.getService());
                 updateCaches();
             }
         }
-        notifyChange();
+        notifyChange(affected);
     }
 
-    private void notifyChange() {
+    private void notifyChange(Collection<String> services) {
         try {
-            listener.onRoutingTableChange();
+            listener.onRoutingTableChange(services);
         }
         catch(Exception ex) {
             LOG.error("Exception during listener execution", ex);
@@ -119,29 +124,16 @@ final class RoutingTable {
         }
     }
 
-    private HashMap<LocationBinding, Boolean> statusMap(Collection<LocationBinding> services) {
-        HashMap<LocationBinding, Boolean> statusMap = new HashMap<LocationBinding, Boolean>();
-        synchronized (lock) {
-            for (LocationBinding service : services) {
-                statusMap.put(service, statusIndex.get(service));
-                updateCaches();
-            }
-        }
-        return statusMap;
-    }
-
     private void updateCaches() {
-        ArrayListMultimap<String, URL> map = ArrayListMultimap.create();
-        synchronized (lock) {
-            for(Map.Entry<String, Map<Member, LocationBinding>> entry : serviceTable.columnMap().entrySet()) {
-                for(LocationBinding binding : entry.getValue().values()) {
-                    if (statusIndex.get(binding)) {
-                        map.put(entry.getKey(), binding.getAddress());
-                    }
+        ArrayListMultimap<String, URL> tempServiceMap = ArrayListMultimap.create();
+        for(Map.Entry<String, Map<Member, LocationBinding>> entry : serviceTable.columnMap().entrySet()) {
+            for(LocationBinding binding : entry.getValue().values()) {
+                if (statusIndex.get(binding)) {
+                    tempServiceMap.put(entry.getKey(), binding.getAddress());
                 }
             }
         }
-        serviceMap = map;
+        serviceMap = tempServiceMap;
     }
 
     private void DumpTable() {

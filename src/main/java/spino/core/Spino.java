@@ -17,6 +17,7 @@ package spino.core;
 
 
 import java.net.URL;
+import java.util.Collection;
 import java.util.List;
 
 public class Spino {
@@ -85,7 +86,25 @@ public class Spino {
      * @param serviceName - the name of the endpoint
      * @return
      */
-    public static List<URL> getServiceAddresses(String serviceName) {
+    public static Collection<URL> getServiceAddresses(String serviceName) {
         return INSTANCE.getServiceAddresses(serviceName);
+    }
+
+    /**
+     * Add a service listener. The listener is invoked whenever locations are added or removed.
+     * @param service
+     * @param listener
+     */
+    void addServiceListener(String service, SpinoServiceListener listener) {
+        INSTANCE.addServiceListener(service, listener);
+    }
+
+    /**
+     * Add a service listener. The listener is invoked whenever locations are added or removed.
+     * @param service
+     * @param listener
+     */
+    void removeServiceListener(String service, SpinoServiceListener listener) {
+        INSTANCE.removeServiceListener(service, listener);
     }
 }

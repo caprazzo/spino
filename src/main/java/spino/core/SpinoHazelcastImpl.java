@@ -15,6 +15,8 @@
  */
 package spino.core;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.Join;
 import com.hazelcast.config.NetworkConfig;
@@ -69,6 +71,8 @@ import java.util.*;
  */
 final class SpinoHazelcastImpl implements RoutingTable.RoutingTableListener {
     private static final Logger LOG = LoggerFactory.getLogger(SpinoHazelcastImpl.class);
+
+    private final Multimap<String, SpinoServiceListener> listeners = ArrayListMultimap.create();
 
     private static final String SERVICES_MAP = "spino-services";
     private static final String GROUP_NAME = "SPINO";
@@ -146,6 +150,24 @@ final class SpinoHazelcastImpl implements RoutingTable.RoutingTableListener {
         return routingTable.getServiceAddresses(service);
     }
 
+    /**
+     * Add a service listener. The listener is invoked whenever locations are added or removed.
+     * @param service
+     * @param listener
+     */
+    void addServiceListener(String service, SpinoServiceListener listener) {
+        listeners.put(service, listener);
+    }
+
+    /**
+     * Remove a service listener for ase
+     * @param service
+     * @param listener
+     */
+    void removeServiceListener(String service, SpinoServiceListener listener) {
+        listeners.remove(service, listener);
+    }
+
     private MultiMap<String, LocationBinding> getServicesMap() {
         return hz.getMultiMap(SERVICES_MAP);
     }
@@ -164,8 +186,18 @@ final class SpinoHazelcastImpl implements RoutingTable.RoutingTableListener {
     }
 
     @Override
-    public void onRoutingTableChange() {
-        // notify changes to any listener
+    public void onRoutingTableChange(Collection<String> services) {
+        for (String service : services) {
+            for(SpinoServiceListener listener : listeners.get(service)) {
+                try {
+                    listener.onServiceChange(service);
+                }
+                catch(Exception ex) {
+                    LOG.error("listener.OnServiceChange(" + service + ") threw an Exception. Listener: " + listener, ex);
+                }
+            }
+        }
+
     }
 
     /**
