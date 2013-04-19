@@ -83,7 +83,7 @@ spino.activateServiceEndpoint("database-v1", "http://db-0:8001");
 
 Any node can list all the active services in the cluster:
 
-```
+```java
 for (spino.Service endpoint : spino.getServiceEndpoints("database-v1")) {
     System.out.println("db available at: " + endpoint.getAddress());
 }
