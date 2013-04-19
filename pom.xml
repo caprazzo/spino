@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>spino</groupId>
+    <artifactId>spino-core</artifactId>
+    <version>0.9-SNAPSHOT</version>
+
+    <description>Spino is a simple tool to create a cluster of java http services.</description>
+
+    <distributionManagement>
+        <repository>
+            <id>repo</id>
+            <url>https://github.com/mcaprari/mcaprari-maven-repo/raw/master/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshot-repo</id>
+            <url>https://github.com/mcaprari/mcaprari-maven-repo/raw/master/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+    <contributors>
+        <contributor>
+            <name>Matteo Caprari</name>
+            <email>matteo.caprari@gmail.com</email>
+        </contributor>
+    </contributors>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
+            <version>2.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.3</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.0.10</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>14.0.1</version>
+        </dependency>
+    </dependencies>
+
+</project>
