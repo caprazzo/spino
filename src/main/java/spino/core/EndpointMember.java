@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.net.URL;
 
 /**
- * Internal representation of a endpoint
+ * Binds an endpoint to a member
  */
 final class EndpointMember implements Serializable {
 
@@ -25,12 +25,12 @@ final class EndpointMember implements Serializable {
 
     /**
      * Creates a new instance of EndpointMember
-     * @param name - name of the endpoint
+     * @param service - name of the endpoint
      * @param address - URL of the endpoint
      * @param member - the cluster member that published information about the endpoint
      */
-    public EndpointMember(String name, URL address, Member member) {
-        this(new Endpoint(name, address), member);
+    public EndpointMember(String service, URL address, Member member) {
+        this(new Endpoint(service, address), member);
     }
 
     public URL getAddress() {
@@ -41,8 +41,8 @@ final class EndpointMember implements Serializable {
         return member;
     }
 
-    public String getName() {
-        return endpoint.getName();
+    public String getService() {
+        return endpoint.getService();
     }
 
     public Endpoint getEndpoint() {

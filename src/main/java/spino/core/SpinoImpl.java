@@ -73,7 +73,7 @@ final class SpinoImpl {
     public void activateServiceEndpoint(String serviceName, URL address) {
         LOG.info("Activating endpoint for endpoint " + serviceName + " at " + address);
         EndpointMember service = new EndpointMember(serviceName, address, cluster.getLocalMember());
-        getServicesMap().put(service.getName(), service);
+        getServicesMap().put(service.getService(), service);
     }
 
     public void activateServiceEndpoint(String serviceName, String address) {
@@ -87,7 +87,7 @@ final class SpinoImpl {
     public void deactivateLocalService(String name, URL address) {
         LOG.info("Deactivating endpoint for endpoint " + name + " at " + address);
         EndpointMember service = new EndpointMember(name, address, cluster.getLocalMember());
-        getServicesMap().remove(service.getName(), service);
+        getServicesMap().remove(service.getService(), service);
     }
 
     public void deactivateLocalService(String name, String address) {

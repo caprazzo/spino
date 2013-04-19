@@ -22,14 +22,14 @@ final class RoutingTable {
 
     synchronized public void putService(EndpointMember service) {
         LOG.info("put endpoint {}", service);
-        serviceTable.put(service.getMember(), service.getName(), service);
+        serviceTable.put(service.getMember(), service.getService(), service);
         statusIndex.put(service, true);
         DumpTable();
     }
 
     synchronized public void removeService(EndpointMember service) {
         LOG.info("remove endpoint {}", service);
-        serviceTable.remove(service.getMember(), service.getName());
+        serviceTable.remove(service.getMember(), service.getService());
         statusIndex.remove(service);
         DumpTable();
     }
