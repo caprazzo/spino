@@ -3,9 +3,9 @@ Spino - simple clustering for java HTTP services
 
 Spino is a simple clustering library for java HTTP services.
 
-Use Spino to implement redundant HTTP services without
-using HTTP proxies. A Spino Node always knows all the available instances of a service,
-so it can direct HTTP calls directly to active servers.
+Use Spino to implement HTTP redundancy without HTTP proxies.
+Each Spino Node always knows all the available http services,
+so it can make calls directly to active servers.
 
 ## Concepts
 
