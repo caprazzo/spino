@@ -65,8 +65,7 @@ those that do not.
 To join a Spino cluster, provide the address of other known nodes
 (one is enough, but it must be up for the join to succeed)
 ```java
-Spino spino = new Spino();
-spino.start("192.168.0.2", "192.168.0.3");
+Spino.start("192.168.0.2", "192.168.0.3");
 ```
 
 (If you are in a multicast environment, you don't need to specify any other node). Just use start()
@@ -76,7 +75,7 @@ spino.start("192.168.0.2", "192.168.0.3");
 When a node knows that a service is ready, it can activate it using
 
 ```java
-spino.activateServiceEndpoint("database-v1", "http://db-0:8001");
+Spino.activateServiceEndpoint("database-v1", "http://db-0:8001");
 ```
 
 ### Listing active services
@@ -84,15 +83,15 @@ spino.activateServiceEndpoint("database-v1", "http://db-0:8001");
 Any node can list all the active services in the cluster:
 
 ```java
-for (spino.Service endpoint : spino.getServiceEndpoints("database-v1")) {
-    System.out.println("db available at: " + endpoint.getAddress());
+for (URL address : Spino.getServiceAddresses("database-v1")) {
+    System.out.println("database-v1 available at: " + address);
 }
 ```
 ### Deactivating an endpoint
 
 A node can withdraw any endpoint at any time.
 ```java
-spino.deactivateServiceEndpoint("database-v1", "http://db-0:8001");
+Spino.deactivateServiceEndpoint("database-v1", "http://db-0:8001");
 ```
 
 ### Shutting down Spino
@@ -104,7 +103,7 @@ or if it's under maintenance.
 When a node is shut down, all its services are deactivated.
 
 ```java
-spino.shutdown()
+Spino.shutdown()
 ```
 
 ### Maven
