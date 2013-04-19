@@ -7,6 +7,21 @@ Use Spino to implement HTTP redundancy without HTTP proxies.
 Each Spino Node always knows all the available http services,
 so it can make calls directly to active servers.
 
+**Table of Contents**
+
+- [Spino - simple clustering for java HTTP services](#spino---simple-clustering-for-java-http-services)
+	- [Concepts](#concepts)
+		- [Service](#service)
+		- [Endpoint](#endpoint)
+		- [Spino Node](#spino-node)
+	- [Usage](#usage)
+		- [Starting Spino](#starting-spino)
+		- [Activating a endpoint](#activating-a-endpoint)
+		- [Listing active services](#listing-active-services)
+		- [Deactivating an endpoint](#deactivating-an-endpoint)
+		- [Shutting down Spino](#shutting-down-spino)
+		- [Maven](#maven)
+
 ## Concepts
 
 ### Service
