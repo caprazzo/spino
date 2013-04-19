@@ -18,11 +18,15 @@ package spino.core;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.hazelcast.config.Config;
+import com.hazelcast.config.Join;
+import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.core.*;
+import com.hazelcast.nio.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -31,10 +35,9 @@ import java.util.*;
  * Spino is a simple tool to coordinate a cluster of Http services.
  */
 public class Spino {
+    private static final Logger LOG = LoggerFactory.getLogger(Spino.class);
 
-    private final static Logger LOG = LoggerFactory.getLogger(Spino.class);
     private static final String SERVICES_MAP = "spino-services";
-
     private static final String GROUP_NAME = "SPINO";
 
     private final RoutingTable routingTable = new RoutingTable();
@@ -44,11 +47,29 @@ public class Spino {
     private Cluster cluster;
 
     /**
-     * Join the Spino cluster.
+     * Join the Spino cluster using Multicast.
      */
     public void start() {
+        start(null);
+    }
+
+    /**
+     * Join the Spino cluster using other known nodes as a starting point.
+     * @param seeds - other known nodes of the cluster
+     */
+    public void start(String... seeds) {
         handler = this.new HazelcastListener();
         Config hzConfig = new Config();
+
+        if (seeds != null) {
+            NetworkConfig networkConfig = hzConfig.getNetworkConfig();
+            Join join = networkConfig.getJoin();
+            join.getMulticastConfig().setEnabled(false);
+            for(String address : seeds) {
+                join.getTcpIpConfig().addMember(address);
+            }
+        }
+
         hzConfig.getGroupConfig().setName(GROUP_NAME);
         this.hz = Hazelcast.newHazelcastInstance(hzConfig);
         this.cluster = hz.getCluster();

@@ -4,7 +4,9 @@ import ch.qos.logback.classic.Level;
 import spino.core.Spino;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 
 public class Example {
@@ -15,7 +17,7 @@ public class Example {
         ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
         root.setLevel(Level.INFO);
 
-        spino.start();
+        spino.start("auth-host-0", "auth-host-1");
         spino.activateServiceEndpoint("some-service", new URL("http://db-01:8001"));
         spino.activateServiceEndpoint("some-service", "http://db-01:8001");
 
