@@ -20,6 +20,7 @@
             <url>https://github.com/mcaprari/mcaprari-maven-repo/raw/master/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
+
     <contributors>
         <contributor>
             <name>Matteo Caprari</name>
