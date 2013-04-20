@@ -15,10 +15,8 @@
  */
 package spino.core;
 
-
 import java.net.URL;
 import java.util.Collection;
-import java.util.List;
 
 public class Spino {
     private static final SpinoHazelcastImpl INSTANCE = new SpinoHazelcastImpl();
@@ -34,7 +32,7 @@ public class Spino {
      * Join the Spino cluster using other known nodes as a starting point.
      * @param seeds - other known nodes of the cluster
      */
-    public static void start(String seeds) {
+    public static void start(String... seeds) {
         INSTANCE.start(seeds);
     }
 
@@ -95,7 +93,7 @@ public class Spino {
      * @param service
      * @param listener
      */
-    void addServiceListener(String service, SpinoServiceListener listener) {
+    public static void addServiceListener(String service, SpinoServiceListener listener) {
         INSTANCE.addServiceListener(service, listener);
     }
 
@@ -104,7 +102,7 @@ public class Spino {
      * @param service
      * @param listener
      */
-    void removeServiceListener(String service, SpinoServiceListener listener) {
+    public static void removeServiceListener(String service, SpinoServiceListener listener) {
         INSTANCE.removeServiceListener(service, listener);
     }
 }

@@ -86,6 +86,6 @@ final class LocationBinding implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("LocationBinding(member=%s, serviceInstance=%s)", member, serviceInstance);
+        return String.format("Binding(member=%s, %s)", member, serviceInstance);
     }
 }

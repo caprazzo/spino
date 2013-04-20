@@ -60,6 +60,6 @@ final class ServiceLocation implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("ServiceLocation(service=%s, address=%s)", service, address);
+        return String.format("Location(%s @ %s)", service, address);
     }
 }

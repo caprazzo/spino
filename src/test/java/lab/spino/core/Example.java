@@ -1,32 +1,45 @@
 package lab.spino.core;
 
 import ch.qos.logback.classic.Level;
-import spino.core.SpinoImpl;
+import ch.qos.logback.classic.Logger;
+import spino.core.Spino;
+import spino.core.SpinoServiceListener;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
+import java.util.Random;
 
 public class Example {
 
     public static void main(String[] args) throws IOException {
-        SpinoImpl spino = new SpinoImpl();
 
-        ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+        Random random = new Random();
+
+        Logger root = (Logger) org.slf4j.LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         root.setLevel(Level.INFO);
 
-        spino.start("auth-host-0", "auth-host-1");
-        spino.activateServiceEndpoint("some-service", new URL("http://db-01:8001"));
-        spino.activateServiceEndpoint("some-service", "http://db-01:8001");
+        listLocations("some-service");
 
-        List<SpinoImpl.Endpoint> serviceEndpoints = spino.getServiceEndpoints("some-service");
-        for (SpinoImpl.Endpoint endpoint : serviceEndpoints) {
-            System.out.println(endpoint.getName());
-            System.out.println(endpoint.getAddress());
+        Spino.addServiceListener("some-service", new SpinoServiceListener() {
+            @Override
+            public void onServiceChange(String service) {
+                System.out.println("Service " + service + " changed");
+                listLocations(service);
+            }
+        });
+
+        Spino.start();
+
+        Spino.activateServiceLocation("some-service", new URL("http://db-01:" + random.nextInt(64000)));
+        //Spino.activateServiceLocation("some-service", "http://db-01:8003");
+    }
+
+    public static void listLocations(String service) {
+        System.out.print("Locations for " + service + ": [");
+        for (URL address : Spino.getServiceAddresses("some-service")) {
+            System.out.print(" " + address);
         }
-
-        spino.shutdown();
-
+        System.out.println(" ]");
     }
 
 }

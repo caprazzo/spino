@@ -102,6 +102,7 @@ final class SpinoHazelcastImpl implements RoutingTable.RoutingTableListener {
             for(String address : seeds) {
                 join.getTcpIpConfig().addMember(address);
             }
+            join.getTcpIpConfig().setEnabled(true);
         }
 
         hzConfig.getGroupConfig().setName(GROUP_NAME);
@@ -119,9 +120,8 @@ final class SpinoHazelcastImpl implements RoutingTable.RoutingTableListener {
     }
 
     void activateServiceLocation(String service, URL address) {
-        LOG.info("Activating endpoint for endpoint " + service + " at " + address);
-        LocationBinding binding = new LocationBinding(service, address, cluster.getLocalMember());
-        getServicesMap().put(service, binding);
+        LOG.info("Activating service " + service + " at " + address);
+        getServicesMap().put(service, new LocationBinding(service, address, cluster.getLocalMember()));
     }
 
     void activateServiceLocation(String service, String address) {
@@ -133,9 +133,8 @@ final class SpinoHazelcastImpl implements RoutingTable.RoutingTableListener {
     }
 
     void deactivateServiceLocation(String service, URL address) {
-        LOG.info("Deactivating endpoint for endpoint " + service + " at " + address);
-        LocationBinding binding = new LocationBinding(service, address, cluster.getLocalMember());
-        getServicesMap().remove(service, binding);
+        LOG.info("Deactivating " + service + " at " + address);
+        getServicesMap().remove(service, new LocationBinding(service, address, cluster.getLocalMember()));
     }
 
     void deactivateServiceLocation(String service, String address) {
@@ -160,7 +159,7 @@ final class SpinoHazelcastImpl implements RoutingTable.RoutingTableListener {
     }
 
     /**
-     * Remove a service listener for ase
+     * Remove a service listener for a service
      * @param service
      * @param listener
      */
@@ -174,14 +173,14 @@ final class SpinoHazelcastImpl implements RoutingTable.RoutingTableListener {
 
     private void syncServiceMap(Cluster cluster) {
         Set<Member> onlineMembers = cluster.getMembers();
-        for (Map.Entry<String, LocationBinding> entry : getServicesMap().entrySet()) {
-            LOG.info("Importing existing endpoint from distributed map: {}", entry);
-            Member member = entry.getValue().getMember();
-            if (!onlineMembers.contains(member)) {
-                LOG.info("Skipping endpoint import from distributed map, because its member is not online: {} ", entry);
+        ArrayList<LocationBinding> initialBindings = new ArrayList<LocationBinding>();
+        for (LocationBinding binding : getServicesMap().values()) {
+            LOG.info("Importing existing endpoint from distributed map: {}", binding);
+            if (!onlineMembers.contains(binding.getMember())) {
+                LOG.info("Skipping endpoint import from distributed map, because its member is not online: {} ", binding);
                 continue;
             }
-            routingTable.putService(entry.getValue());
+            routingTable.addLocation(binding);
         }
     }
 
@@ -212,28 +211,28 @@ final class SpinoHazelcastImpl implements RoutingTable.RoutingTableListener {
         public void entryAdded(EntryEvent<String, LocationBinding> event) {
             if (LOG.isDebugEnabled())
                 LOG.debug("entryAdded {}", event);
-            routingTable.putService(event.getValue());
+            routingTable.addLocation(event.getValue());
         }
 
         @Override
         public void entryRemoved(EntryEvent<String, LocationBinding> event) {
             if (LOG.isDebugEnabled())
                 LOG.debug("entryRemoved {}", event);
-            routingTable.removeService(event.getValue());
+            routingTable.removeLocation(event.getValue());
         }
 
         @Override
         public void entryUpdated(EntryEvent<String, LocationBinding> event) {
             if (LOG.isDebugEnabled())
                 LOG.debug("entryUpdated {}", event);
-            routingTable.putService(event.getValue());
+            routingTable.addLocation(event.getValue());
         }
 
         @Override
         public void entryEvicted(EntryEvent<String, LocationBinding> event) {
             if (LOG.isDebugEnabled())
                 LOG.debug("entryEvicted {}", event);
-            routingTable.removeService(event.getValue());
+            routingTable.removeLocation(event.getValue());
         }
 
         @Override

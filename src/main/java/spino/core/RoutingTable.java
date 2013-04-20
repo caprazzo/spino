@@ -29,7 +29,7 @@ import java.util.*;
 
 final class RoutingTable {
 
-    private volatile Multimap<String, URL> serviceMap;
+    private volatile Multimap<String, URL> serviceMap = ArrayListMultimap.create();
 
     public interface RoutingTableListener {
         /**
@@ -65,8 +65,8 @@ final class RoutingTable {
         return serviceMap.get(service);
      }
 
-    void putService(LocationBinding binding) {
-        LOG.info("put endpoint {}", binding);
+    void addLocation(LocationBinding binding) {
+        LOG.info("Adding {}", binding);
         synchronized (lock) {
             serviceTable.put(binding.getMember(), binding.getService(), binding);
             statusIndex.put(binding, true);
@@ -75,8 +75,8 @@ final class RoutingTable {
         notifyChange(Arrays.asList(binding.getService()));
     }
 
-    void removeService(LocationBinding binding) {
-        LOG.info("remove endpoint {}", binding);
+    void removeLocation(LocationBinding binding) {
+        LOG.info("Removing {}", binding);
         synchronized (lock) {
             serviceTable.remove(binding.getMember(), binding.getService());
             statusIndex.remove(binding);
