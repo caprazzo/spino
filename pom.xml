@@ -7,10 +7,9 @@
     <groupId>spino</groupId>
     <artifactId>spino</artifactId>
     <packaging>pom</packaging>
-    <version>0.9-SNAPSHOT</version>
+    <version>1.0</version>
     <modules>
+        <module>spino-core</module>
         <module>spino-httpclient</module>
     </modules>
-
-
 </project>
