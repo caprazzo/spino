@@ -12,15 +12,17 @@ so it can make calls directly to active servers.
 - [Spino - simple clustering for java HTTP services](#spino---simple-clustering-for-java-http-services)
 	- [Concepts](#concepts)
 		- [Service](#service)
-		- [Location](#serviceInstance)
+		- [Location](#location)
 		- [Spino Node](#spino-node)
 	- [Usage](#usage)
-		- [Starting Spino](#starting-spino)
-		- [Activating a serviceInstance](#activating-a-serviceInstance)
+		- [Configuring and Starting Spino](#configuring-and-starting-spino)
+		- [Activating a Location](#activating-a-location)
 		- [Listing active services](#listing-active-services)
-		- [Deactivating an serviceInstance](#deactivating-an-serviceInstance)
+		- [Deactivating an serviceInstance](#deactivating-an-serviceinstance)
 		- [Shutting down Spino](#shutting-down-spino)
 		- [Maven](#maven)
+	- [Using With Apache HttpClient](#using-with-apache-httpclient)
+	- [Using with httpclient-failover](#using-with-httpclient-failover)
 
 ## Concepts
 
