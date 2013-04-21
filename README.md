@@ -75,7 +75,7 @@ true for you, you can specify other nodes addresses by
 Spino.start("192.168.0.2", ""192.168.0.3")
 ```
 
-Spino uses [Hazelcast]() to maintain the cluster. For more advanced configuration options
+Spino uses [Hazelcast](http://www.hazelcast.com/) to maintain the cluster. For more advanced configuration options
 please consult the [Hazelcast Manual](http://www.hazelcast.com/docs/2.5/manual/multi_html/ch12.html)
 
 ### Activating a Location
