@@ -36,7 +36,7 @@ import java.util.*;
  *      RoutingTable: a local Table (Hazelcat Member, Server, (member, service, address), Status)
  *
  *  Service Activation:
- *      When a service is activated on an address using activateServiceLocation
+ *      When a service is activated on an address using activateLocation
  *      an element is added to ServiceMap  service -> (LocalMember, service, address)
  *
  *      When ServiceMap notifies entryAdded(sender, (member, service, address)),
@@ -46,7 +46,7 @@ import java.util.*;
  *      entries for that Member are set to Active.
  *
  *  Service Deactivation:
- *      When a service is deactivated on an address using deactivateServiceLocation,
+ *      When a service is deactivated on an address using deactivateLocation,
  *      an element is removed from the ServiceMap service -> (LocalMember, service, address)
  *
  *      When ServiceMap notifies entryRemoved, the entry is removed from RoutingTable

@@ -30,13 +30,13 @@ public class Example {
 
         Spino.start();
 
-        Spino.activateServiceLocation("some-service", new URL("http://db-01:" + random.nextInt(64000)));
-        //Spino.activateServiceLocation("some-service", "http://db-01:8003");
+        Spino.activateLocation("some-service", new URL("http://db-01:" + random.nextInt(64000)));
+        //Spino.activateLocation("some-service", "http://db-01:8003");
     }
 
     public static void listLocations(String service) {
         System.out.print("Locations for " + service + ": [");
-        for (URL address : Spino.getServiceAddresses("some-service")) {
+        for (URL address : Spino.getLocations("some-service")) {
             System.out.print(" " + address);
         }
         System.out.println(" ]");

@@ -44,53 +44,50 @@ public class Spino {
     }
 
     /**
-     * Activate an endpoint for a endpoint. The caller
-     * is declaring that an instance of endpoint `serviceName` is now available
-     * to accept connections. All other nodes in the cluster will be notified.
+     * Activate a Location for a service. The caller
+     * is declaring that an instance of service `serviceName` is now available
+     * to accept connections at `address`. All nodes in the cluster will be notified.
      *
-     * Re-activating an active endpoint has no effect.
-     *
-     * @param service - the name of the endpoint. Must be unique across the cluster.
-     * @param address URL of the endpoint
+     * @param service - the service name.
+     * @param address URL of the service instance
      */
-    public static void activateServiceLocation(String service, URL address) {
+    public static void activateLocation(String service, URL address) {
         INSTANCE.activateServiceLocation(service, address);
     }
 
-    public static void activateServiceLocation(String service, String address) {
+    public static void activateLocation(String service, String address) {
         INSTANCE.activateServiceLocation(service, address);
     }
 
     /**
-     * Deactivate a endpoint endpoint. The caller
-     * is declaring that the instance of `serviceName` will not
-     * be available at this address.
+     * Activate a Location for a service. The caller
+     * is declaring that an instance of service `serviceName` is now available
+     * to accept connections at `address`. All nodes in the cluster will be notified.
      *
-     * De-activating a deactivated or non-existing endpoint has no effect.
-     *
-     * @param serviceName - the name of the endpoint.
-     * @param address URL where the endpoint can be reached.
+     * @param service - the service name.
+     * @param address URL of the service instance
      */
-    public static void deactivateServiceLocation(String serviceName, URL address) {
-        INSTANCE.deactivateServiceLocation(serviceName, address);
+    public static void deactivateLocation(String service, URL address) {
+        INSTANCE.deactivateServiceLocation(service, address);
     }
 
-    public static void deactivateLocalService(String serviceName, String address) {
-        INSTANCE.deactivateServiceLocation(serviceName, address);
+    public static void deactivateLocation(String service, String address) {
+        INSTANCE.deactivateServiceLocation(service, address);
     }
 
     /**
-     * List all active addresses for a service. An endpoint is active when it has been de
-     * @param serviceName - the name of the endpoint
+     * List all active location for a service
+     * @param service - the service name
      * @return
      */
-    public static Collection<URL> getServiceAddresses(String serviceName) {
-        return INSTANCE.getServiceAddresses(serviceName);
+    public static Collection<URL> getLocations(String service) {
+        return INSTANCE.getServiceAddresses(service);
     }
 
     /**
-     * Add a service listener. The listener is invoked whenever locations are added or removed.
-     * @param service
+     * Add a service listener.
+     * The listener is notified whenever locations are added or removed for this service
+     * @param service - the service name
      * @param listener
      */
     public static void addServiceListener(String service, SpinoServiceListener listener) {
@@ -98,8 +95,8 @@ public class Spino {
     }
 
     /**
-     * Add a service listener. The listener is invoked whenever locations are added or removed.
-     * @param service
+     * Remove a service listener.
+     * @param service - the service name
      * @param listener
      */
     public static void removeServiceListener(String service, SpinoServiceListener listener) {

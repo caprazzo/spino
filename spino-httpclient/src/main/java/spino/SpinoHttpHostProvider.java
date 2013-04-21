@@ -29,10 +29,10 @@ public class SpinoHttpHostProvider implements Iterable<HttpHost> {
         Spino.addServiceListener(service, new SpinoServiceListener() {
             @Override
             public void onServiceChange(String service) {
-                buildHostsList(Spino.getServiceAddresses(service));
+                buildHostsList(Spino.getLocations(service));
             }
         });
-        buildHostsList(Spino.getServiceAddresses(service));
+        buildHostsList(Spino.getLocations(service));
     }
 
     private synchronized void buildHostsList(Collection<URL> addresses) {

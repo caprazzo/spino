@@ -49,7 +49,7 @@ final class RoutingTable {
     // to maintain a double index on LocationBinding
     private HashBasedTable<Member, String, LocationBinding> serviceTable = HashBasedTable.create();
 
-    // maintains enabled/disabled status for getServiceAddresses
+    // maintains enabled/disabled status for getLocations
     private HashMap<LocationBinding, Boolean> statusIndex = new HashMap<LocationBinding, Boolean>();
 
     RoutingTable(RoutingTableListener listener) {

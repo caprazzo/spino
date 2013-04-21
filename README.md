@@ -12,7 +12,7 @@ so it can make calls directly to active servers.
 - [Spino - simple clustering for java HTTP services](#spino---simple-clustering-for-java-http-services)
 	- [Concepts](#concepts)
 		- [Service](#service)
-		- [Endpoint](#serviceInstance)
+		- [Location](#serviceInstance)
 		- [Spino Node](#spino-node)
 	- [Usage](#usage)
 		- [Starting Spino](#starting-spino)
@@ -30,27 +30,27 @@ A `Service` is just a string that uniquely identifies an HTTP interface.
 
 For example `auth-api-v1`.
 
-### Endpoint
+### Location
 
-An `Endpoint` is an instance of a `Service`, and is identified by a string and an address. 
+An `Location` is an instance of a `Service`, and is identified by a string and an address. 
 
-For example, `Endpoint("auth-api-v1", "http://auth-host-0:8080")`
+For example, `Location("auth-api-v1", "http://auth-host-0:8080")`
 
-An `Endpoint` is associated with a `Spino Node`.
+An `Location` is associated with a `Spino Node`.
 
-Multiple endpoints can exist for the same Service, provided that have a different Address.
+Multiple locations can exist for the same Service.
 
 ### Spino Node
 
 A `Spino Node` is any java program that joins the `Spino Cluster`.
 
-A `Spino Node` can notify the cluster that an Endpoint has
-become available or unavailable, and list service endpoints.
+A `Spino Node` can notify the cluster that a Location has
+become available or unavailable, and list service locations.
 
-If a Node goes down or becomes unreachable, any Endpoint it
+If a Node goes down or becomes unreachable, any Location it
 declared available, automatically becomes unavailable.
 
-Obviously this works best if a Node is also an Endpoint itself
+Obviously this works best if a Node is also an Location itself
 (for example, a java program that embeds a jetty server is an ideal Spino Node).
 
 Spino only checks if nodes are up or down and DOES NOT check
@@ -60,22 +60,28 @@ those that do not.
 
 ## Usage
 
-### Starting Spino
+### Configuring and Starting Spino
 
-To join a Spino cluster, provide the address of other known nodes
-(one is enough, but it must be up for the join to succeed)
 ```java
-Spino.start("192.168.0.2", "192.168.0.3");
+Spino.start();
 ```
 
-(If you are in a multicast environment, you don't need to specify any other node). Just use start()
+The above only work if the nodes are in a multicast environment. If this is not
+true for you, you can specify other nodes addresses by
 
-### Activating a serviceInstance
+```java
+Spino.start("192.168.0.2", ""192.168.0.3")
+```
+
+Spino uses [Hazelcast]() to maintain the cluster. For more advanced configuration options
+please consult the [Hazelcast Manual](http://www.hazelcast.com/docs/2.5/manual/multi_html/ch12.html)
+
+### Activating a Location
 
 When a node knows that a service is ready, it can activate it using
 
 ```java
-Spino.activateServiceEndpoint("database-v1", "http://db-0:8001");
+Spino.activateLocation("database-v1", "http://db-0:8001");
 ```
 
 ### Listing active services
@@ -83,15 +89,15 @@ Spino.activateServiceEndpoint("database-v1", "http://db-0:8001");
 Any node can list all the active services in the cluster:
 
 ```java
-for (URL address : Spino.getServiceAddresses("database-v1")) {
-    System.out.println("database-v1 available at: " + address);
+for (URL location : Spino.getLocations("database-v1")) {
+    System.out.println("database-v1 available at: " + location);
 }
 ```
 ### Deactivating an serviceInstance
 
 A node can withdraw any serviceInstance at any time.
 ```java
-Spino.deactivateServiceEndpoint("database-v1", "http://db-0:8001");
+Spino.deactivateLocation("database-v1", "http://db-0:8001");
 ```
 
 ### Shutting down Spino
@@ -128,30 +134,30 @@ Spino.shutdown()
 
 ## Using With Apache HttpClient
 
-To easily user Spino with Apache Httpclient, add a dependency to `spino-httpclient`
+`spino-httpclient` makes it easier to use Spino with [Apache HttpClient](http://hc.apache.org/httpcomponents-client-ga/index.html)
+
+Add `spino-httpclient` to your dependencies:
 
 ```xml
 <dependency>
     <groupId>spino</groupId>
     <artifactId>spino-httpclient</artifactId>
-    <version>1.0</version>
+    <version>[1.1,)</version>
 </dependency>
 ```
+
+Crude example of retrying the same http call over multiple Spino Nodes:
+(if this is what you are after, see `HttpClient-Failover` below)
 
 ```java
 Spino.start();
 
-// this provider.iterator() will always return
-// the list of active hosts for `my-service`
+// every time provider.iterator() is called,
+// it returns a new iterator over the most recent list of active locations:
 Iterable<HttpHost> provider = SpinoHttpHostProvider.ofService("my-service");
 
 HttpClient client = new DefaultHttpClient();
-
-
 HttpGet request = new HttpGet("/index.html");
-
-// crude example of retrying the same http call over multiple hosts
-// (if this is what you are after, see HttpClient-Failover
 
 Iterator<HttpHost> hostIterator = provider.iterator();
 while(hostIterator.hasNext()) {
@@ -173,9 +179,12 @@ while(hostIterator.hasNext()) {
 }
 ```
 
-## Using with Failover-Httpclient
+## Using with httpclient-failover
 
-To easily user Spino with Httpclient-Failover, add a dependency to `spino-httpclient`
+[Httpclient-Failover](github.com/mcaprari/httpclient-failover) is an http client that allows to failover over multiple hosts,
+and it's very easy to use with spino.
+
+Add dependencies to `spino-httpclient` and `httpclient-failover`
 
 ```xml
 <dependency>
@@ -191,6 +200,8 @@ To easily user Spino with Httpclient-Failover, add a dependency to `spino-httpcl
 </dependency>
 ```
 
+Then simply use a `SpinoHttpHostProvider` with  `httpClient.execute()`
+
 ```java
 Spino.start();
 
@@ -200,7 +211,7 @@ FailoverHttpClient httpClient = new FailoverHttpClient();
 
 HttpGet request = new HttpGet("/index.html");
 
-// this will try the request on all hosts, until it succeeds
+// this will try the request on all hosts
 HttpResponse httpResponse = httpClient.execute(provider, request);
 ```
 
