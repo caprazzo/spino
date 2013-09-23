@@ -228,3 +228,7 @@ HttpResponse httpResponse = httpClient.execute(provider, request);
 
 
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/mcaprari/spino/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
